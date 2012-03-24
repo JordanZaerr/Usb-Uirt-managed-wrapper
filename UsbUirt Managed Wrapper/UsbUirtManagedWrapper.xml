@@ -1,0 +1,559 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>UsbUirtManagedWrapper</name>
+    </assembly>
+    <members>
+        <member name="T:UsbUirt.EventArgs.LearnCompletedEventArgs">
+            <summary>
+            Event args passed to the LearnCompleted event.
+            </summary>
+        </member>
+        <member name="P:UsbUirt.EventArgs.LearnCompletedEventArgs.Cancelled">
+            <summary>
+            Gets whether learning was cancelled.
+            </summary>
+        </member>
+        <member name="P:UsbUirt.EventArgs.LearnCompletedEventArgs.Code">
+            <summary>
+            Gets the learned code, if learning completed successfully.
+            </summary>
+        </member>
+        <member name="P:UsbUirt.EventArgs.LearnCompletedEventArgs.Error">
+            <summary>
+            Gets any exception thrown while learning.
+            </summary>
+        </member>
+        <member name="P:UsbUirt.EventArgs.LearnCompletedEventArgs.UserState">
+            <summary>
+            Gets the optional user state.
+            </summary>
+        </member>
+        <member name="T:UsbUirt.State.SyncLearnResults">
+            <summary>
+            Summary description for SyncLearnResults.
+            </summary>
+        </member>
+        <member name="T:UsbUirt.State.LearnState">
+            <summary>
+            Summary description for LearnState.
+            </summary>
+        </member>
+        <member name="T:UsbUirt.EventArgs.ReceivedEventArgs">
+            <summary>
+            Event args passed to the Received event.
+            </summary>
+        </member>
+        <member name="P:UsbUirt.EventArgs.ReceivedEventArgs.IRCode">
+            <summary>
+            Gets the received IR code.
+            </summary>
+        </member>
+        <member name="M:UsbUirt.Receiver.UUIRTSetReceiveCallback(System.IntPtr,UsbUirt.Receiver.ReceiveCallback,System.IntPtr)">
+            <summary>
+            Registers a receive callback function which the driver will call when an IR code 
+            is received from the air.
+            
+            typedef void (WINAPI *PUUCALLBACKPROC) (char *IREventStr, void *userData);
+            When the USB-UIRT receives a code from the air, it will call the callback function
+            with a null-terminated, twelve-character (like IRMAN) ir code in IREventStr. 
+            </summary>
+            <remarks>
+            The types of codes which are passed to IREventStr are not the same as the type
+            of codes passed back from a UUIRTLearnIR call (the codes from a UUIRTLearnIR 
+            are much larger and contain all the necessary data to reproduce a code, 
+            whereas the codes passed to IREventStr are simpler representations of IR codes 
+            only long enough to be unique).
+            </remarks>
+            <param name="hDrvHandle">Handle to to USB-UIRT returned by UUIRTOpen</param>
+            <param name="receiveProc">the address of a 
+            PUUCALLBACKPROC function</param>
+            <param name="userData">a general-purpose 
+            32-bit value supplied by the caller to UUIRTSetReceiveCallback. This parameter 
+            is useful for carrying context information, etc. Will be passed to receiveProc.</param>
+            <returns>TRUE on success</returns>
+        </member>
+        <member name="E:UsbUirt.Receiver.Received">
+            <summary>
+            Raised when IR input is received.
+            </summary>
+            
+        </member>
+        <member name="T:UsbUirt.Receiver.ReceivedEventHandler">
+            <summary>
+            The delegate used for the Received event.
+            </summary>
+        </member>
+        <member name="T:UsbUirt.Receiver.ReceiveCallback">
+            <summary>
+            Delegate used to receive callbacks when IR input is received
+            </summary>
+        </member>
+        <member name="M:UsbUirt.Transmitter.Transmit(System.String)">
+            <summary>
+            Transmits an IR code synchronously using the default code format.
+            </summary>
+            <param name="irCode">The IR code to transmit.</param>
+        </member>
+        <member name="M:UsbUirt.Transmitter.Transmit(System.String,UsbUirt.Enums.CodeFormat,System.Int32,System.TimeSpan)">
+            <summary>
+            Transmits an IR code synchronously.
+            </summary>
+            <param name="irCode">The IR code to transmit.</param>
+            <param name="codeFormat">The format of the IR code.</param>
+            <param name="repeatCount">Indicates how many iterations of the code should be 
+            sent (in the case of a 2-piece code, the first stream is sent once followed 
+            by the second stream sent repeatCount times).</param>
+            <param name="inactivityWaitTime">Time in milliseconds since the last received 
+            IR activity to wait before sending an IR code. Normally, pass 0 for this parameter.</param>
+        </member>
+        <member name="M:UsbUirt.Transmitter.TransmitAsync(System.String)">
+            <summary>
+            Transmits an IR code asynchronously using the default code format.
+            </summary>
+            <param name="irCode">The IR code to transmit.</param>
+        </member>
+        <member name="M:UsbUirt.Transmitter.TransmitAsync(System.String,UsbUirt.Enums.CodeFormat,System.Int32,System.TimeSpan)">
+            <summary>
+            Transmits an IR code asynchronously.
+            </summary>
+            <param name="irCode">The IR code to transmit.</param>
+            <param name="codeFormat">The format of the IR code.</param>
+            <param name="repeatCount">Indicates how many iterations of the code should be 
+            sent (in the case of a 2-piece code, the first stream is sent once followed 
+            by the second stream sent repeatCount times).</param>
+            <param name="inactivityWaitTime">Time in milliseconds since the last received 
+            IR activity to wait before sending an IR code. Normally, pass 0 for this parameter.</param>
+        </member>
+        <member name="M:UsbUirt.Transmitter.TransmitAsync(System.String,UsbUirt.Enums.CodeFormat,System.Int32,System.TimeSpan,System.Object)">
+            <summary>
+            Transmits an IR code asynchronously.
+            </summary>
+            <param name="irCode">The IR code to transmit.</param>
+            <param name="codeFormat">The format of the IR code.</param>
+            <param name="repeatCount">Indicates how many iterations of the code should be 
+            sent (in the case of a 2-piece code, the first stream is sent once followed 
+            by the second stream sent repeatCount times).</param>
+            <param name="inactivityWaitTime">Time in milliseconds since the last received 
+            IR activity to wait before sending an IR code. Normally, pass 0 for this parameter.</param>
+            <param name="userState">An optional user state object that will be passed to the 
+            TransmitCompleted event.</param>
+        </member>
+        <member name="M:UsbUirt.Transmitter.UUIRTTransmitIR(System.IntPtr,System.String,System.Int32,System.Int32,System.Int32,System.IntPtr,System.IntPtr,System.IntPtr)">
+            <summary>
+            Transmits an IR code via the USB-UIRT hardware.
+            </summary>
+            <param name="hDrvHandle">Handle to to USB-UIRT returned by UUIRTOpen</param>
+            <param name="irCode">null-terminated string</param>
+            <param name="codeFormat">format specifier which identifies the format of the IRCode
+            code. Currently, supported formats are Compressed_UIRT (STRUCT), RAW, and 
+            Pronto-RAW</param>
+            <param name="repeatCount">indicates how many iterations of the code should be 
+            sent (in the case of a 2-piece code, the first stream is sent once followed 
+            by the second stream sent repeatCount times)</param>
+            <param name="inactivityWaitTime">time 
+            in milliseconds since the last received IR activity to wait before sending an 
+            IR code -- normally pass 0 for this parameter</param>
+            <param name="hEvent">optional event handle which is obtained by a call to 
+            CreateEvent. If hEvent is NULL, the call to UUIRTTransmitIR will block and not 
+            return until the IR code has been fully transmitted to the air. If hEvent 
+            is not NULL, it must be a valid Windows event hande. In this case, 
+            UUIRTTransmitIR will return immediately and when the IR stream has 
+            completed transmission this event will be signalled by the driver</param>
+            <param name="reserved0">reserved for future expansion; should be NULL</param>
+            <param name="reserved1">reserved for future expansion; should be NULL</param>
+            <returns>TRUE on success</returns>
+        </member>
+        <member name="E:UsbUirt.Transmitter.TransmitCompleted">
+            <summary>
+            Raised when transmission, begun via TransmitAsync(), has completed.
+            </summary>
+        </member>
+        <member name="T:UsbUirt.State.TransmitState">
+            <summary>
+            Summary description for TransmitState.
+            </summary>
+        </member>
+        <member name="T:UsbUirt.EventArgs.TransmitCompletedEventArgs">
+            <summary>
+            Event args passed to the TransmitCompleted event.
+            </summary>
+        </member>
+        <member name="P:UsbUirt.EventArgs.TransmitCompletedEventArgs.Error">
+            <summary>
+            Gets any exception thrown while transmitting.
+            </summary>
+        </member>
+        <member name="P:UsbUirt.EventArgs.TransmitCompletedEventArgs.UserState">
+            <summary>
+            Gets the optional user state.
+            </summary>
+        </member>
+        <member name="M:UsbUirt.Learner.Learn">
+            <summary>
+            Learns an IR code synchronously using the default code format.
+            </summary>
+            <returns>The IR code that was learned, or null if learning failed.</returns>
+        </member>
+        <member name="M:UsbUirt.Learner.Learn(UsbUirt.Enums.CodeFormat)">
+            <summary>
+            Learns an IR code synchronously.
+            </summary>
+            <param name="codeFormat">The format of the IR code to use in learning.</param>
+            <returns>The IR code that was learned, or null if learning failed.</returns>
+        </member>
+        <member name="M:UsbUirt.Learner.Learn(System.TimeSpan)">
+            <summary>
+            Learns an IR code synchronously using the default code format.
+            </summary>
+            <param name="timeout">The timeout after which to abort learning if it has not completed.</param>
+            <returns>The IR code that was learned, or null if learning failed.</returns>
+        </member>
+        <member name="M:UsbUirt.Learner.Learn(UsbUirt.Enums.CodeFormat,UsbUirt.Enums.LearnCodeModifier,System.TimeSpan)">
+            <summary>
+            Learns an IR code synchronously.
+            </summary>
+            <param name="codeFormat">The format of the IR code to use in learning.</param>
+            <param name="learnCodeFormat">The modifier used for the code format.</param>
+            <param name="timeout">The timeout after which to abort learning if it has not completed.</param>
+            <returns>The IR code that was learned, or null if learning failed.</returns>
+        </member>
+        <member name="M:UsbUirt.Learner.Learn(UsbUirt.Enums.CodeFormat,UsbUirt.Enums.LearnCodeModifier,System.UInt32,System.TimeSpan)">
+            <summary>
+            Learns an IR code synchronously.
+            </summary>
+            <param name="codeFormat">The format of the IR code to use in learning.</param>
+            <param name="learnCodeFormat">The modifier used for the code format.</param>
+            <param name="forcedFrequency">The frequency to use in learning.</param>
+            <param name="timeout">The timeout after which to abort learning if it has not completed.</param>
+            <returns>The IR code that was learned, or null if learning failed.</returns>
+        </member>
+        <member name="M:UsbUirt.Learner.LearnAsync">
+            <summary>
+            Learns an IR code asynchronously using the default code format.
+            </summary>
+        </member>
+        <member name="M:UsbUirt.Learner.LearnAsync(UsbUirt.Enums.CodeFormat)">
+            <summary>
+            Learns an IR code asynchronously.
+            </summary>
+            <param name="codeFormat">The format of the IR code to use in learning.</param>
+        </member>
+        <member name="M:UsbUirt.Learner.LearnAsync(UsbUirt.Enums.CodeFormat,UsbUirt.Enums.LearnCodeModifier,System.Object)">
+            <summary>
+            Learns an IR code asynchronously.
+            </summary>
+            <param name="codeFormat">The format of the IR code to use in learning.</param>
+            <param name="learnCodeFormat">The modifier used for the code format.</param>
+            <param name="userState">An optional user state object that will be passed to the 
+            Learning and LearnCompleted events and which can be used when calling LearnAsyncCancel().</param>
+        </member>
+        <member name="M:UsbUirt.Learner.LearnAsync(UsbUirt.Enums.CodeFormat,UsbUirt.Enums.LearnCodeModifier,System.UInt32,System.Object)">
+            <summary>
+            Learns an IR code asynchronously.
+            </summary>
+            <param name="codeFormat">The format of the IR code to use in learning.</param>
+            <param name="learnCodeFormat">The modifier used for the code format.</param>
+            <param name="forcedFrequency">The frequency to use in learning.</param>
+            <param name="userState">An optional user state object that will be passed to the 
+            Learning and LearnCompleted events and which can be used when calling LearnAsyncCancel().</param>
+        </member>
+        <member name="M:UsbUirt.Learner.LearnAsyncCancel">
+            <summary>
+            Cancels a LearnAsync() operation.
+            </summary>
+        </member>
+        <member name="M:UsbUirt.Learner.LearnAsyncCancel(System.Object)">
+            <summary>
+            Cancels a LearnAsync() operation that was passed the specified userState.
+            </summary>
+            <param name="userState">The optional userState object passed to LearnAsync().</param>
+        </member>
+        <member name="M:UsbUirt.Learner.UUIRTLearnIR(System.IntPtr,System.Int32,System.Text.StringBuilder,UsbUirt.Learner.LearnCallback,System.IntPtr,System.IntPtr,System.UInt32,System.IntPtr,System.IntPtr)">
+            <summary>
+            Instructs the USB-UIRT and the API to learn an IR code.
+            </summary>
+            <param name="hDrvHandle">Handle to to USB-UIRT returned by UUIRTOpen</param>
+            <param name="codeFormat">format specifier which identifies the format of the IRCode
+            code to learn. Currently, supported formats are Compressed_UIRT (STRUCT), RAW, and 
+            Pronto-RAW</param>
+            <param name="IRCode">the learned IR code (upon return). It is the responsibility 
+            of the caller to allocate space for this string; suggested string size is at 
+            least 2048 bytes</param>
+            <param name="progressProc">a caller-supplied callback function which will be called
+            periodically during the learn process and may be used to update user dialogs, 
+            etc. Information passed to the callback are learn progress %, signal quality, and 
+            carrier frequency.</param>
+            <param name="userData">will be passed by the USB-UIRT driver to any calls of 
+            progressProc. </param>
+            <param name="pAbort">pointer to a Boolean variable 
+            which should be initialized to FALSE (0) prior to the call. Setting this variable 
+            TRUE during the learn process will cause the UUIRTLearnIR process to abort and the 
+            function to return. Since the UUIRTLearnIR function will block for the duration of 
+            the learn process, one could set the *pAbort to TRUE either within the callback 
+            function or from another thread</param>
+            <param name="param1">currently used only when the codeFormat 
+            includes the UUIRTDRV_IRFMT_LEARN_FORCEFREQ flag (not normally needed) -- in which 
+            case param1 should indicate the forced carrier frequency</param>
+            <param name="reserved0">reserved for future expansion; should be NULL</param>
+            <param name="reserved1">reserved for future expansion; should be NULL</param>
+            <returns>TRUE on success</returns>
+            <remarks>The IR code learned  will be a complete IR stream suitable for subsequent 
+            transmission via UUIRTTransmitIR. Consequently, the same formats supported by 
+            Transmit are also available for learn. It is recommended to use either RAW or 
+            Pronto-RAW codeFormat to offer the best compatibility; compressed-UIRT format 
+            is often too limiting, although it does produce the smallest codes.</remarks>
+        </member>
+        <member name="E:UsbUirt.Learner.LearnCompleted">
+            <summary>
+            Raised when learning, begun via LearnAsync(), has completed.
+            </summary>
+        </member>
+        <member name="E:UsbUirt.Learner.Learning">
+            <summary>
+            Raised periodically during learning, to provided feedback on progress.
+            </summary>
+        </member>
+        <member name="T:UsbUirt.Learner.LearnCompletedEventHandler">
+            <summary>
+            The delegate used for the LarnCompleted event.
+            </summary>
+        </member>
+        <member name="T:UsbUirt.Learner.LearningEventHandler">
+            <summary>
+            The delegate used for the Learning event.
+            </summary>
+        </member>
+        <member name="T:UsbUirt.Learner.LearnCallback">
+            <summary>
+            Delegate used as a callback during learning in order to update display the progress
+            </summary>
+        </member>
+        <member name="T:UsbUirt.EventArgs.LearningEventArgs">
+            <summary>
+            Event args passed to the Learning event.
+            </summary>
+        </member>
+        <member name="P:UsbUirt.EventArgs.LearningEventArgs.Progress">
+            <summary>
+            Gets the progress, from 0 to 100.
+            </summary>
+        </member>
+        <member name="P:UsbUirt.EventArgs.LearningEventArgs.SignalQuality">
+            <summary>
+            Gets the currently detected signal quality.
+            </summary>
+        </member>
+        <member name="P:UsbUirt.EventArgs.LearningEventArgs.CarrierFrequency">
+            <summary>
+            Gets the currently detected carrier frequency.
+            </summary>
+        </member>
+        <member name="P:UsbUirt.EventArgs.LearningEventArgs.UserState">
+            <summary>
+            Gets the optional user state.
+            </summary>
+        </member>
+        <member name="T:UsbUirt.Enums.CodeFormat">
+            <summary>
+            Defines the code formats used when transmitting or learning IR codes.
+            </summary>
+        </member>
+        <member name="F:UsbUirt.Enums.CodeFormat.Uuirt">
+            <summary>
+            Uuirt code format
+            </summary>
+        </member>
+        <member name="F:UsbUirt.Enums.CodeFormat.Pronto">
+            <summary>
+            Pronto format
+            </summary>
+        </member>
+        <member name="T:UsbUirt.Enums.LearnCodeModifier">
+            <summary>
+            Defines special modifiers used when learning IR codes.
+            </summary>
+        </member>
+        <member name="F:UsbUirt.Enums.LearnCodeModifier.Default">
+            <summary>
+            Use default learning.
+            </summary>
+        </member>
+        <member name="F:UsbUirt.Enums.LearnCodeModifier.ForceRaw">
+            <summary>
+            Force RAW mode.
+            </summary>
+        </member>
+        <member name="F:UsbUirt.Enums.LearnCodeModifier.ForceStruct">
+            <summary>
+            Force Struct-mode.
+            </summary>
+        </member>
+        <member name="F:UsbUirt.Enums.LearnCodeModifier.ForceFrequency">
+            <summary>
+            Force a particular frequency.
+            </summary>
+            <remarks>When (and only when) using ForceFrequency, you must call the appropriate
+            overload of Learn() or LearnAsync() and provide the expected frequency value.</remarks>
+        </member>
+        <member name="F:UsbUirt.Enums.LearnCodeModifier.FrequencyDetect">
+            <summary>
+            Automatically detect the frequency.
+            </summary>
+        </member>
+        <member name="T:UsbUirt.Driver">
+            <summary>
+            Creates an instance of the UUIRT driver.
+            </summary>
+        </member>
+        <member name="M:UsbUirt.Driver.#ctor">
+            <summary>
+            Creates an instance of the UUIRT driver for use.
+            </summary>
+            <exception cref="T:System.ApplicationException"></exception>
+        </member>
+        <member name="M:UsbUirt.Driver.UUIRTClose(System.IntPtr)">
+            <summary>
+            Terminates communication with the USB-UIRT. Should be called prior to terminating 
+            host program.
+            </summary>
+            <param name="hDrvHandle">Handle to to USB-UIRT returned by UUIRTOpen</param>
+            <returns></returns>
+        </member>
+        <member name="M:UsbUirt.Driver.UUIRTOpen">
+            <summary>
+            Opens communication with the USB-UIRT.  
+            A call to UUIRTOpen should occur prior to any other driver function calls (with 
+            the exception of UUIRTGetDrvInfo below).
+            </summary>
+            <returns>On success, a handle to be used in subsequent calls to USB-UIRT
+            functions. On failure, INVALID_HANDLE_VALUE.</returns>
+        </member>
+        <member name="M:UsbUirt.Driver.UUIRTGetUUIRTInfo(System.IntPtr,UsbUirt.Driver.UUINFO@)">
+            <summary>
+            Retrieves information about the UUIRT hardware.
+            </summary>
+            <param name="hDrvHandle">Handle to to USB-UIRT returned by UUIRTOpen</param>
+            <param name="uuInfo">UUINFO structure that will be filled in upon success</param>
+            <returns>TRUE on success</returns>
+        </member>
+        <member name="M:UsbUirt.Driver.UUIRTGetDrvInfo(System.UInt32@)">
+            <summary>
+            Retrieves information about the driver (not the hardware itself). This is 
+            intended to allow version control on the .DLL driver and accomodate future 
+            changes and enhancements to the API. 
+            </summary>
+            <remarks>This call may be called prior to a call to UUIRTOpen.</remarks>
+            <param name="drvVersion"></param>
+            <returns>TRUE on success</returns>
+        </member>
+        <member name="P:UsbUirt.Driver.Handle">
+            <summary>
+            The handle to the UUIRT driver.
+            </summary>
+        </member>
+        <member name="F:UsbUirt.Driver.UuirtDriverError.NoDeviceFound">
+            <summary>
+            Unable to connect to USB-UIRT device
+            </summary>
+        </member>
+        <member name="F:UsbUirt.Driver.UuirtDriverError.NoResponse">
+            <summary>
+            Unable to communicate with USB-UIRT device
+            </summary>
+        </member>
+        <member name="F:UsbUirt.Driver.UuirtDriverError.NoDll">
+            <summary>
+            Unable to find USB-UIRT Driver
+            </summary>
+        </member>
+        <member name="F:UsbUirt.Driver.UuirtDriverError.WrongVersion">
+            <summary>
+            USB-UIRT's firmware is not compatible with this API DLL
+            </summary>
+        </member>
+        <member name="T:UsbUirt.Driver.UUINFO">
+            <summary>
+            Reperesents information about the UUIRT hardware.
+            </summary>
+        </member>
+        <member name="F:UsbUirt.Driver.UUINFO.fwVersion">
+            <summary>
+            Version of firmware residing on the USB-UIRT.
+            </summary>
+        </member>
+        <member name="F:UsbUirt.Driver.UUINFO.protVersion">
+            <summary>
+            Protocol version supported by the USB-UIRT firmware.
+            </summary>
+        </member>
+        <member name="F:UsbUirt.Driver.UUINFO.fwDateDay">
+            <summary>
+            Firmware revision day
+            </summary>
+        </member>
+        <member name="F:UsbUirt.Driver.UUINFO.fwDateMonth">
+            <summary>
+            Firmware revision month
+            </summary>
+        </member>
+        <member name="F:UsbUirt.Driver.UUINFO.fwDateYear">
+            <summary>
+            Firmware revision year
+            </summary>
+        </member>
+        <member name="M:UsbUirt.GeneralSettings.UUIRTGetUUIRTConfig(System.IntPtr,System.UInt32@)">
+            <summary>
+            Retrieves the current feature configuration bits from the USB-UIRT's nonvolatile 
+            configuration memory. These various configuration bits control how the USB-UIRT 
+            behaves. Most are reserved for future implementation and should be read and 
+            written as Zero.
+            </summary>
+            <param name="hDrvHandle">Handle to to USB-UIRT returned by UUIRTOpen</param>
+            <param name="uConfig">Integer representation of USB-UIRT configuration</param>
+            <returns>TRUE on success</returns>
+            <remarks> Using this API call is optional and is only needed to support 
+            changing USB-UIRT's private preferences</remarks>
+        </member>
+        <member name="M:UsbUirt.GeneralSettings.UUIRTSetUUIRTConfig(System.IntPtr,System.UInt32)">
+            <summary>
+            Configures the current feature configuration bits for the USB-UIRT's nonvolatile 
+            configuration memory. These various configuration bits control how the USB-UIRT 
+            behaves.
+            </summary>
+            <param name="hDrvHandle">Handle to to USB-UIRT returned by UUIRTOpen</param>
+            <param name="uConfig">Integer representation of USB-UIRT configuration</param>
+            <returns>TRUE on success</returns>
+        </member>
+        <member name="T:UsbUirt.GeneralSettings.UUIRTConfigBits">
+            <summary>
+            Flags used when getting or setting the USB-UIRT configuration
+            </summary>
+        </member>
+        <member name="F:UsbUirt.GeneralSettings.UUIRTConfigBits.BlinkOnReceive">
+            <summary>
+            Indicator LED on USB-UIRT blinks when remote signals are received
+            </summary>
+        </member>
+        <member name="F:UsbUirt.GeneralSettings.UUIRTConfigBits.BlinkOnTransmit">
+            <summary>
+            Indicator LED on USB-UIRT lights during IR transmission.
+            </summary>
+        </member>
+        <member name="F:UsbUirt.GeneralSettings.UUIRTConfigBits.GenerateLegacyCodesOnReceive">
+            <summary>
+            Generate 'legacy' UIRT-compatible codes on receive
+            </summary>
+        </member>
+        <member name="F:UsbUirt.GeneralSettings.UUIRTConfigBits.Reserved0">
+            <summary>
+            Reserved
+            </summary>
+        </member>
+        <member name="F:UsbUirt.GeneralSettings.UUIRTConfigBits.Reserved1">
+            <summary>
+            Reserved
+            </summary>
+        </member>
+    </members>
+</doc>
