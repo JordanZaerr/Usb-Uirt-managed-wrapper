@@ -89,13 +89,33 @@
             Delegate used to receive callbacks when IR input is received
             </summary>
         </member>
-        <member name="M:UsbUirt.Transmitter.Transmit(System.String)">
+        <member name="M:UsbUirt.Transmitter.#ctor(UsbUirt.Enums.Emitter,UsbUirt.Enums.CodeFormat,System.Int32,System.Int32)">
             <summary>
-            Transmits an IR code synchronously using the default code format.
+            Creates an instance of the Transmitter class that can be used to transmit IR codes.
             </summary>
-            <param name="irCode">The IR code to transmit.</param>
+            <param name="defaultEmitter">The emitter to transmit the IR code with</param>
+            <param name="defaultCodeFormat">The format of the IR code.</param>
+            <param name="defaultRepeatCount">Indicates how many iterations of the code should be 
+            sent (in the case of a 2-piece code, the first stream is sent once followed 
+            by the second stream sent repeatCount times).</param>
+            <param name="defaultInactivityWaitTime">Time in milliseconds since the last received 
+            IR activity to wait before sending an IR code. Normally, pass 0 for this parameter.</param>
+            <remarks>This class should be disposed if using this constructor.</remarks>
         </member>
-        <member name="M:UsbUirt.Transmitter.Transmit(System.String,UsbUirt.Enums.CodeFormat,System.Int32,System.TimeSpan)">
+        <member name="M:UsbUirt.Transmitter.#ctor(UsbUirt.Driver,UsbUirt.Enums.Emitter,UsbUirt.Enums.CodeFormat,System.Int32,System.Int32)">
+            <summary>
+            Creates an instance of the Transmitter class that can be used to transmit IR codes.
+            </summary>
+            <param name="driver">An instance of a driver that can be shared among components.</param>
+            <param name="defaultEmitter">The emitter to transmit the IR code with</param>
+            <param name="defaultCodeFormat">The format of the IR code.</param>
+            <param name="defaultRepeatCount">Indicates how many iterations of the code should be 
+            sent (in the case of a 2-piece code, the first stream is sent once followed 
+            by the second stream sent repeatCount times).</param>
+            <param name="defaultInactivityWaitTime">Time in milliseconds since the last received 
+            IR activity to wait before sending an IR code. Normally, pass 0 for this parameter.</param>
+        </member>
+        <member name="M:UsbUirt.Transmitter.Transmit(System.String,System.Nullable{UsbUirt.Enums.Emitter},System.Nullable{UsbUirt.Enums.CodeFormat},System.Nullable{System.Int32},System.Nullable{System.Int32})">
             <summary>
             Transmits an IR code synchronously.
             </summary>
@@ -106,14 +126,9 @@
             by the second stream sent repeatCount times).</param>
             <param name="inactivityWaitTime">Time in milliseconds since the last received 
             IR activity to wait before sending an IR code. Normally, pass 0 for this parameter.</param>
+            <param name="emitter">The emitter to transmit the IR code with</param>
         </member>
-        <member name="M:UsbUirt.Transmitter.TransmitAsync(System.String)">
-            <summary>
-            Transmits an IR code asynchronously using the default code format.
-            </summary>
-            <param name="irCode">The IR code to transmit.</param>
-        </member>
-        <member name="M:UsbUirt.Transmitter.TransmitAsync(System.String,UsbUirt.Enums.CodeFormat,System.Int32,System.TimeSpan)">
+        <member name="M:UsbUirt.Transmitter.TransmitAsync(System.String,System.Object,System.Nullable{UsbUirt.Enums.Emitter},System.Nullable{UsbUirt.Enums.CodeFormat},System.Nullable{System.Int32},System.Nullable{System.Int32})">
             <summary>
             Transmits an IR code asynchronously.
             </summary>
@@ -124,18 +139,7 @@
             by the second stream sent repeatCount times).</param>
             <param name="inactivityWaitTime">Time in milliseconds since the last received 
             IR activity to wait before sending an IR code. Normally, pass 0 for this parameter.</param>
-        </member>
-        <member name="M:UsbUirt.Transmitter.TransmitAsync(System.String,UsbUirt.Enums.CodeFormat,System.Int32,System.TimeSpan,System.Object)">
-            <summary>
-            Transmits an IR code asynchronously.
-            </summary>
-            <param name="irCode">The IR code to transmit.</param>
-            <param name="codeFormat">The format of the IR code.</param>
-            <param name="repeatCount">Indicates how many iterations of the code should be 
-            sent (in the case of a 2-piece code, the first stream is sent once followed 
-            by the second stream sent repeatCount times).</param>
-            <param name="inactivityWaitTime">Time in milliseconds since the last received 
-            IR activity to wait before sending an IR code. Normally, pass 0 for this parameter.</param>
+            <param name="emitter">The emitter to transmit the IR code with</param>
             <param name="userState">An optional user state object that will be passed to the 
             TransmitCompleted event.</param>
         </member>
@@ -169,10 +173,31 @@
             Raised when transmission, begun via TransmitAsync(), has completed.
             </summary>
         </member>
-        <member name="T:UsbUirt.State.TransmitState">
+        <member name="T:UsbUirt.Enums.Emitter">
             <summary>
-            Summary description for TransmitState.
+            Choose which emitter to use to send the IR signal
             </summary>
+        </member>
+        <member name="F:UsbUirt.Enums.Emitter.Internal">
+            <summary>
+            The internal IR blaster
+            </summary>
+        </member>
+        <member name="F:UsbUirt.Enums.Emitter.External1">
+            <summary>
+            The external emitter on the 'Right' channel
+            </summary>
+            <remarks>
+            The external connection is a normal headphone jack, that is where the Left/Right channel comes from
+            </remarks>
+        </member>
+        <member name="F:UsbUirt.Enums.Emitter.External2">
+            <summary>
+            The external emitter on the 'Left' channel
+            </summary>
+            <remarks>
+            The external connection is a normal headphone jack, that is where the Left/Right channel comes from
+            </remarks>
         </member>
         <member name="T:UsbUirt.EventArgs.TransmitCompletedEventArgs">
             <summary>
@@ -334,6 +359,11 @@
             Event args passed to the Learning event.
             </summary>
         </member>
+        <member name="P:UsbUirt.EventArgs.LearningEventArgs.CarrierFrequency">
+            <summary>
+            Gets the currently detected carrier frequency.
+            </summary>
+        </member>
         <member name="P:UsbUirt.EventArgs.LearningEventArgs.Progress">
             <summary>
             Gets the progress, from 0 to 100.
@@ -342,11 +372,6 @@
         <member name="P:UsbUirt.EventArgs.LearningEventArgs.SignalQuality">
             <summary>
             Gets the currently detected signal quality.
-            </summary>
-        </member>
-        <member name="P:UsbUirt.EventArgs.LearningEventArgs.CarrierFrequency">
-            <summary>
-            Gets the currently detected carrier frequency.
             </summary>
         </member>
         <member name="P:UsbUirt.EventArgs.LearningEventArgs.UserState">

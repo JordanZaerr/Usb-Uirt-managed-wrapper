@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Security;
 
 namespace UsbUirt
 {
@@ -53,6 +54,7 @@ namespace UsbUirt
 
         public static bool GenerateLegacyCodesOnReceive { get; set; }
 
+        [SecuritySafeCritical]
         private static UUIRTConfigBits GetConfig(IntPtr driverHandle)
         {
             uint uConfig;
@@ -63,6 +65,7 @@ namespace UsbUirt
             return ((UUIRTConfigBits)uConfig);
         }
 
+        [SecuritySafeCritical]
         private static void SetConfig(
             IntPtr driverHandle,
             bool blinkOnReceive,

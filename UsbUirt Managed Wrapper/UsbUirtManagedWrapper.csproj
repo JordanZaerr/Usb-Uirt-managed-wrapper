@@ -21,7 +21,7 @@
     <StartupObject />
     <FileUpgradeFlags>
     </FileUpgradeFlags>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <OldToolsVersion>0.0</OldToolsVersion>
@@ -40,6 +40,7 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OutputPath>bin\Debug\</OutputPath>
@@ -102,6 +103,7 @@
     <Compile Include="Enums\CodeFormat.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Enums\Emitter.cs" />
     <Compile Include="GeneralSettings.cs" />
     <Compile Include="Driver.cs" />
     <Compile Include="DriverUserBase.cs" />
@@ -126,9 +128,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="EventArgs\TransmitCompletedEventArgs.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="State\TransmitState.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Transmitter.cs" />

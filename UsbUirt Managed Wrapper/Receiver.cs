@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Text;
 using UsbUirt.EventArgs;
 
@@ -13,12 +14,12 @@ namespace UsbUirt
 
         public Receiver()
         {
-
+            GenerateLegacyCodes = false;
         }
 
         public Receiver(Driver driver) : base(driver)
         {
-
+            GenerateLegacyCodes = false;
         }
 
         public bool GenerateLegacyCodes 
@@ -75,6 +76,7 @@ namespace UsbUirt
             }
         }
 
+        [SecuritySafeCritical]
         private void ClearReceiveCallback()
         {
             if (false == UUIRTSetReceiveCallback(DriverHandle, null, IntPtr.Zero))
@@ -83,6 +85,7 @@ namespace UsbUirt
             }
         }
 
+        [SecuritySafeCritical]
         private void SetReceiveCallback(ReceiveCallback cb)
         {
             if (false

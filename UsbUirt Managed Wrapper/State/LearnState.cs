@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Security;
 using UsbUirt.Enums;
 
 namespace UsbUirt.State
@@ -16,6 +17,7 @@ namespace UsbUirt.State
         private IntPtr _abort;
         private bool _disposed;
 
+        [SecuritySafeCritical]
         internal LearnState(
             CodeFormat codeFormat,
             LearnCodeModifier learnCodeFormat,
@@ -57,12 +59,24 @@ namespace UsbUirt.State
 
         internal bool WasAborted
         {
-            get { return Marshal.ReadInt32(_abort) != 0; }
+            get { return GetInt() != 0; }
+        }
+
+        [SecuritySafeCritical]
+        public int GetInt()
+        {
+            return Marshal.ReadInt32(_abort);
+        }
+
+        [SecuritySafeCritical]
+        public void SetInt()
+        {
+            Marshal.WriteInt32(_abort, 1);
         }
 
         internal void Abort()
         {
-            Marshal.WriteInt32(_abort, 1);
+            SetInt();
         }
 
         #region IDisposable Members
@@ -73,6 +87,7 @@ namespace UsbUirt.State
             GC.SuppressFinalize(this);
         }
 
+        [SecuritySafeCritical]
         private void Dispose(bool disposing)
         {
             if (!this._disposed)

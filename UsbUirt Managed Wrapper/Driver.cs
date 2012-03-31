@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Security;
 
 namespace UsbUirt
 {
@@ -15,6 +16,7 @@ namespace UsbUirt
         /// Creates an instance of the UUIRT driver for use.
         /// </summary>
         /// <exception cref="ApplicationException"></exception>
+        [SecuritySafeCritical]
         public Driver()
         {
             Handle = UUIRTOpen();
@@ -48,6 +50,7 @@ namespace UsbUirt
             Handle = handle;
         }
 
+       [SecuritySafeCritical]
         public static DriverVersion GetVersion(Driver driver)
         {
             uint driverVersion;
@@ -75,6 +78,7 @@ namespace UsbUirt
                uuInfo.protVersion);
         }
 
+        [SecuritySafeCritical]
         public static DriverVersion GetVersion()
         {
             var handle = UUIRTOpen();
@@ -117,6 +121,7 @@ namespace UsbUirt
             GC.SuppressFinalize(this);
         }
 
+        [SecuritySafeCritical]
         private void Dispose(bool isDisposing)
         {
             if (isDisposing && !_disposed)

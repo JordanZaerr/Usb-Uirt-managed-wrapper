@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Text;
 using System.Threading;
 using UsbUirt.Enums;
@@ -324,6 +325,7 @@ namespace UsbUirt
             IntPtr reserved0,
             IntPtr reserved1);
 
+        [SecuritySafeCritical]
         private void DoLearn(object state)
         {
             var learnState = state as LearnState;
@@ -381,6 +383,7 @@ namespace UsbUirt
             }
         }
 
+        [SecuritySafeCritical]
         private void LearnCallbackProc(
             uint progress,
             uint sigQuality,

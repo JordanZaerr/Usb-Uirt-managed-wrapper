@@ -1,36 +1,81 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Threading;
+using System.Threading.Tasks;
 using UsbUirt.Enums;
 using UsbUirt.EventArgs;
-using UsbUirt.State;
-
 namespace UsbUirt
 {
     public class Transmitter : DriverUserBase
     {
-        private int _defaultRepeatCount = 1;
-        private TimeSpan _defaultInactivityWaitTime = TimeSpan.FromMilliseconds(50);
-        private CodeFormat _defaultTransmitCodeFormat = CodeFormat.Pronto;
+        private int _defaultRepeatCount;
+        private int _defaultInactivityWaitTime;
+        private CodeFormat _defaultCodeFormat;
+        private Emitter _defaultEmitter;
 
-        public Transmitter()
+        /// <summary>
+        /// Creates an instance of the Transmitter class that can be used to transmit IR codes.
+        /// </summary>
+        /// <param name="defaultEmitter">The emitter to transmit the IR code with</param>
+        /// <param name="defaultCodeFormat">The format of the IR code.</param>
+        /// <param name="defaultRepeatCount">Indicates how many iterations of the code should be 
+        /// sent (in the case of a 2-piece code, the first stream is sent once followed 
+        /// by the second stream sent repeatCount times).</param>
+        /// <param name="defaultInactivityWaitTime">Time in milliseconds since the last received 
+        /// IR activity to wait before sending an IR code. Normally, pass 0 for this parameter.</param>
+        /// <remarks>This class should be disposed if using this constructor.</remarks>
+        public Transmitter(Emitter defaultEmitter = Emitter.All, 
+                           CodeFormat defaultCodeFormat = CodeFormat.Pronto,
+                           int defaultRepeatCount = 1,
+                           int defaultInactivityWaitTime = 0)
         {
+            _defaultEmitter = defaultEmitter;
+            _defaultCodeFormat = defaultCodeFormat;
+            _defaultRepeatCount = defaultRepeatCount;
+            _defaultInactivityWaitTime = defaultInactivityWaitTime;
         }
 
-        public Transmitter(Driver driver) : base(driver)
+        /// <summary>
+        /// Creates an instance of the Transmitter class that can be used to transmit IR codes.
+        /// </summary>
+        /// <param name="driver">An instance of a driver that can be shared among components.</param>
+        /// <param name="defaultEmitter">The emitter to transmit the IR code with</param>
+        /// <param name="defaultCodeFormat">The format of the IR code.</param>
+        /// <param name="defaultRepeatCount">Indicates how many iterations of the code should be 
+        /// sent (in the case of a 2-piece code, the first stream is sent once followed 
+        /// by the second stream sent repeatCount times).</param>
+        /// <param name="defaultInactivityWaitTime">Time in milliseconds since the last received 
+        /// IR activity to wait before sending an IR code. Normally, pass 0 for this parameter.</param>
+        public Transmitter(Driver driver, 
+                           Emitter defaultEmitter = Emitter.All,
+                           CodeFormat defaultCodeFormat = CodeFormat.Pronto,
+                           int defaultRepeatCount = 1,
+                           int defaultInactivityWaitTime = 0)
+            : base(driver)
         {
+            _defaultEmitter = defaultEmitter;
+            _defaultCodeFormat = defaultCodeFormat;
+            _defaultRepeatCount = defaultRepeatCount;
+            _defaultInactivityWaitTime = defaultInactivityWaitTime;
         }
 
-        public TimeSpan DefaultInactivityWaitTime 
+        public Emitter DefaultEmitter
+        {
+            get { return _defaultEmitter; }
+            set { _defaultEmitter = value; }
+        }
+
+        public int DefaultInactivityWaitTime 
         {
             get { return _defaultInactivityWaitTime; }
             set { _defaultInactivityWaitTime = value; }
         }
 
-        public CodeFormat DefaultTransmitCodeFormat 
+        public CodeFormat DefaultCodeFormat 
         {
-            get { return _defaultTransmitCodeFormat; }
-            set { _defaultTransmitCodeFormat = value; }
+            get { return _defaultCodeFormat; }
+            set { _defaultCodeFormat = value; }
         }
 
         public int DefaultRepeatCount 
@@ -56,17 +101,6 @@ namespace UsbUirt
         /// </summary>
         public event EventHandler<TransmitCompletedEventArgs> TransmitCompleted;
 
-
-        /// <summary>
-        /// Transmits an IR code synchronously using the default code format.
-        /// </summary>
-        /// <param name="irCode">The IR code to transmit.</param>
-        public void Transmit(string irCode)
-        {
-            CheckDisposed();
-            Transmit(irCode, DefaultTransmitCodeFormat, _defaultRepeatCount, _defaultInactivityWaitTime);
-        }
-
         /// <summary>
         /// Transmits an IR code synchronously.
         /// </summary>
@@ -77,19 +111,87 @@ namespace UsbUirt
         /// by the second stream sent repeatCount times).</param>
         /// <param name="inactivityWaitTime">Time in milliseconds since the last received 
         /// IR activity to wait before sending an IR code. Normally, pass 0 for this parameter.</param>
+        /// <param name="emitter">The emitter to transmit the IR code with</param>
         public void Transmit(
             string irCode,
-            CodeFormat codeFormat,
-            int repeatCount,
-            TimeSpan inactivityWaitTime)
+            Emitter? emitter = null,
+            CodeFormat? codeFormat = null,
+            int? repeatCount = null,
+            int? inactivityWaitTime = null)
         {
             CheckDisposed();
-            if (null == irCode)
+            var task = Task.Factory.StartNew(() => TransmitInternal(irCode,
+                    codeFormat,
+                    repeatCount,
+                    inactivityWaitTime,
+                    emitter));
+            try
+            {
+                task.Wait();
+            }
+            catch (Exception ex)
+            {
+                throw ex.GetBaseException();
+            }
+        }
+
+        /// <summary>
+        /// Transmits an IR code asynchronously.
+        /// </summary>
+        /// <param name="irCode">The IR code to transmit.</param>
+        /// <param name="codeFormat">The format of the IR code.</param>
+        /// <param name="repeatCount">Indicates how many iterations of the code should be 
+        /// sent (in the case of a 2-piece code, the first stream is sent once followed 
+        /// by the second stream sent repeatCount times).</param>
+        /// <param name="inactivityWaitTime">Time in milliseconds since the last received 
+        /// IR activity to wait before sending an IR code. Normally, pass 0 for this parameter.</param>
+        /// <param name="emitter">The emitter to transmit the IR code with</param>
+        /// <param name="userState">An optional user state object that will be passed to the 
+        /// TransmitCompleted event.</param>
+        public void TransmitAsync(
+            string irCode,
+            object userState = null,
+            Emitter? emitter = null,
+            CodeFormat? codeFormat = null,
+            int? repeatCount = null,
+            int? inactivityWaitTime = null)
+        {
+            CheckDisposed();
+            Task.Factory
+                .StartNew(() => TransmitInternal(irCode,
+                    codeFormat,
+                    repeatCount,
+                   inactivityWaitTime,
+                    emitter))
+                .ContinueWith(t =>
+                {
+                    var temp = TransmitCompleted;
+                    if (null != temp)
+                    {
+                        temp(this, new TransmitCompletedEventArgs(t.Exception, userState));
+                    }
+                });
+        }
+
+        [SecuritySafeCritical]
+        private void TransmitInternal(
+            string irCode,
+            CodeFormat? codeFormat,
+            int? repeatCount,
+            int? inactivityWaitTime,
+            Emitter? emitter)
+        {
+            codeFormat = codeFormat ?? _defaultCodeFormat;
+            repeatCount = repeatCount ?? _defaultRepeatCount;
+            inactivityWaitTime = inactivityWaitTime ?? _defaultInactivityWaitTime;
+            emitter = emitter ?? _defaultEmitter;
+
+            if (irCode == null)
             {
                 throw new ArgumentNullException("irCode", "irCode cannot be null");
             }
 
-            if (0 == irCode.Length)
+            if (irCode.Length == 0)
             {
                 throw new ArgumentException("irCode", "irCode cannot be empty");
             }
@@ -99,7 +201,7 @@ namespace UsbUirt
                 throw new ArgumentOutOfRangeException("repeatCount", "repeatCount cannot be negative");
             }
 
-            if (inactivityWaitTime < TimeSpan.Zero)
+            if (inactivityWaitTime < 0)
             {
                 throw new ArgumentOutOfRangeException("inactivityWaitTime",
                     "inactivityWaitTime cannot be less than TimeSpan.Zero");
@@ -107,152 +209,19 @@ namespace UsbUirt
 
             using (var evt = new ManualResetEvent(false))
             {
-                TransmitIr(irCode,
-                    codeFormat,
-                    repeatCount,
-                    Convert.ToInt32(inactivityWaitTime.TotalMilliseconds),
-                    evt);
+                if (false == UUIRTTransmitIR(
+                    DriverHandle,
+                    emitter.Value.GetZoneForEmitter() + irCode,
+                    (int)codeFormat.Value,
+                    repeatCount.Value,
+                    inactivityWaitTime.Value,
+                    evt.Handle,
+                    IntPtr.Zero,
+                    IntPtr.Zero))
+                {
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                }
                 evt.WaitOne();
-            }
-        }
-
-        /// <summary>
-        /// Transmits an IR code asynchronously using the default code format.
-        /// </summary>
-        /// <param name="irCode">The IR code to transmit.</param>
-        public void TransmitAsync(string irCode)
-        {
-            CheckDisposed();
-            TransmitAsync(irCode,
-                DefaultTransmitCodeFormat,
-                _defaultRepeatCount,
-                _defaultInactivityWaitTime,
-                null);
-        }
-
-        /// <summary>
-        /// Transmits an IR code asynchronously.
-        /// </summary>
-        /// <param name="irCode">The IR code to transmit.</param>
-        /// <param name="codeFormat">The format of the IR code.</param>
-        /// <param name="repeatCount">Indicates how many iterations of the code should be 
-        /// sent (in the case of a 2-piece code, the first stream is sent once followed 
-        /// by the second stream sent repeatCount times).</param>
-        /// <param name="inactivityWaitTime">Time in milliseconds since the last received 
-        /// IR activity to wait before sending an IR code. Normally, pass 0 for this parameter.</param>
-        public void TransmitAsync(
-            string irCode,
-            CodeFormat codeFormat,
-            int repeatCount,
-            TimeSpan inactivityWaitTime)
-        {
-            CheckDisposed();
-            TransmitAsync(irCode, codeFormat, repeatCount, inactivityWaitTime, null);
-        }
-
-        /// <summary>
-        /// Transmits an IR code asynchronously.
-        /// </summary>
-        /// <param name="irCode">The IR code to transmit.</param>
-        /// <param name="codeFormat">The format of the IR code.</param>
-        /// <param name="repeatCount">Indicates how many iterations of the code should be 
-        /// sent (in the case of a 2-piece code, the first stream is sent once followed 
-        /// by the second stream sent repeatCount times).</param>
-        /// <param name="inactivityWaitTime">Time in milliseconds since the last received 
-        /// IR activity to wait before sending an IR code. Normally, pass 0 for this parameter.</param>
-        /// <param name="userState">An optional user state object that will be passed to the 
-        /// TransmitCompleted event.</param>
-        public void TransmitAsync(
-            string irCode,
-            CodeFormat codeFormat,
-            int repeatCount,
-            TimeSpan inactivityWaitTime,
-            object userState)
-        {
-            CheckDisposed();
-            if (null == irCode)
-            {
-                throw new ArgumentNullException("irCode", "irCode cannot be null");
-            }
-
-            if (0 == irCode.Length)
-            {
-                throw new ArgumentException("irCode", "irCode cannot be empty");
-            }
-
-            if (repeatCount < 0)
-            {
-                throw new ArgumentOutOfRangeException("repeatCount", "repeatCount cannot be negative");
-            }
-
-            if (inactivityWaitTime < TimeSpan.Zero)
-            {
-                throw new ArgumentOutOfRangeException("inactivityWaitTime",
-                    "inactivityWaitTime cannot be less than TimeSpan.Zero");
-            }
-
-            var transmitState = new TransmitState(irCode,
-                codeFormat,
-                repeatCount,
-                Convert.ToInt32(inactivityWaitTime.TotalMilliseconds),
-                userState);
-            if (false == ThreadPool.QueueUserWorkItem(DoTransmit, transmitState))
-            {
-                throw new ApplicationException("Unable to QueueUserWorkItem");
-            }
-        }
-
-        private void DoTransmit(object state)
-        {
-            var transmitState = state as TransmitState;
-            try
-            {
-                Exception error = null;
-                try
-                {
-                    TransmitIr(
-                        transmitState.IRCode,
-                        transmitState.CodeFormat,
-                        transmitState.RepeatCount,
-                        transmitState.InactivityWaitTime,
-                        transmitState.WaitEvent);
-                    transmitState.WaitEvent.WaitOne();
-                }
-                catch (Exception ex)
-                {
-                    error = ex;
-                }
-
-                var temp = TransmitCompleted;
-                if (null != temp)
-                {
-                    temp(this, new TransmitCompletedEventArgs(error, transmitState.UserState));
-                }
-            }
-            finally
-            {
-                transmitState.Dispose();
-            }
-        }
-
-        private void TransmitIr(
-            string irCode,
-            CodeFormat codeFormat,
-            int repeatCount,
-            int inactivityWaitTime,
-            ManualResetEvent evt)
-        {
-            if (false == UUIRTTransmitIR(
-                DriverHandle,
-                irCode,
-                (int)codeFormat,
-                repeatCount,
-                inactivityWaitTime,
-                null == evt ? IntPtr.Zero : evt.Handle,
-                IntPtr.Zero,
-                IntPtr.Zero))
-            {
-                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             }
         }
 

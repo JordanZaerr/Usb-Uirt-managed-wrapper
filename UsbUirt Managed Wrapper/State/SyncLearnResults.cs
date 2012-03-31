@@ -4,66 +4,57 @@ using UsbUirt.EventArgs;
 
 namespace UsbUirt.State
 {
-	/// <summary>
-	/// Summary description for SyncLearnResults.
-	/// </summary>
-	internal class SyncLearnResults : IDisposable
-	{
-		private bool _disposed = false;
-		private ManualResetEvent _manualResetEvent;
-		private LearnCompletedEventArgs _learnedEventArgs;
+    /// <summary>
+    /// Summary description for SyncLearnResults.
+    /// </summary>
+    internal class SyncLearnResults : IDisposable
+    {
+        private bool _disposed;
+        private LearnCompletedEventArgs _learnedEventArgs;
+        private ManualResetEvent _manualResetEvent;
 
-		internal SyncLearnResults() 
-		{
-			_manualResetEvent = new ManualResetEvent(false);
-		}
+        internal SyncLearnResults()
+        {
+            _manualResetEvent = new ManualResetEvent(false);
+        }
 
-		internal ManualResetEvent WaitEvent 
-		{
-			get 
-			{
-				return _manualResetEvent; 
-			} 
-		}
+        internal LearnCompletedEventArgs LearnCompletedEventArgs
+        {
+            get { return _learnedEventArgs; }
+            set { _learnedEventArgs = value; }
+        }
 
-		internal LearnCompletedEventArgs LearnCompletedEventArgs 
-		{
-			get 
-			{
-				return _learnedEventArgs; 
-			} 
-			set 
-			{
-				_learnedEventArgs = value; 
-			} 
-		}
+        internal ManualResetEvent WaitEvent
+        {
+            get { return _manualResetEvent; }
+        }
 
-		#region IDisposable Members
+        #region IDisposable Members
 
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-		private void Dispose(bool disposing)
-		{
-			if(!this._disposed)
-			{
-				if(disposing)
-				{
-					// Dispose any managed resources.
-				}
-             
-				if (null != _manualResetEvent) 
-				{
-					_manualResetEvent.Close();
-					_manualResetEvent = null;
-				}
+        private void Dispose(bool disposing)
+        {
+            if (!this._disposed)
+            {
+                if (disposing)
+                {
+                    // Dispose any managed resources.
+                }
 
-			}
-			_disposed = true;         
-		}
-		#endregion
-	}
+                if (null != _manualResetEvent)
+                {
+                    _manualResetEvent.Close();
+                    _manualResetEvent = null;
+                }
+            }
+            _disposed = true;
+        }
+
+        #endregion
+    }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using UsbUirt;
+using UsbUirt.Enums;
 using UsbUirt.EventArgs;
 
 namespace ConsoleTest
@@ -27,7 +28,7 @@ namespace ConsoleTest
                 Console.ReadLine();
                 var transmitter = new Transmitter(driver);
                 transmitter.TransmitCompleted += OnTransmitComplete;
-                transmitter.TransmitAsync(result, UsbUirt.Enums.CodeFormat.Pronto, 5, TimeSpan.Zero);
+                transmitter.TransmitAsync(result, emitter: Emitter.Internal);
                 Console.ReadLine();
             }
         }
@@ -39,7 +40,10 @@ namespace ConsoleTest
 
         private static void OnTransmitComplete(object sender, TransmitCompletedEventArgs e)
         {
-            Console.WriteLine("Transmit Complete");
+            if(e.Error == null)
+                Console.WriteLine("Transmit Complete");
+            else
+                Console.WriteLine(e.Error.ToString());
         }
 
         private static void OnLearning(object sender, LearningEventArgs e)
