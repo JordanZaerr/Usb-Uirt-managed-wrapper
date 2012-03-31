@@ -148,7 +148,7 @@ namespace UsbUirt
         /// <param name="emitter">The emitter to transmit the IR code with</param>
         /// <param name="userState">An optional user state object that will be passed to the 
         /// TransmitCompleted event.</param>
-        public void TransmitAsync(
+        public Task TransmitAsync(
             string irCode,
             object userState = null,
             Emitter? emitter = null,
@@ -157,13 +157,13 @@ namespace UsbUirt
             int? inactivityWaitTime = null)
         {
             CheckDisposed();
-            Task.Factory
+            var task = Task.Factory
                 .StartNew(() => TransmitInternal(irCode,
                     codeFormat,
                     repeatCount,
                    inactivityWaitTime,
-                    emitter))
-                .ContinueWith(t =>
+                    emitter));
+                task.ContinueWith(t =>
                 {
                     var temp = TransmitCompleted;
                     if (null != temp)
@@ -171,6 +171,7 @@ namespace UsbUirt
                         temp(this, new TransmitCompletedEventArgs(t.Exception, userState));
                     }
                 });
+            return task;
         }
 
         [SecuritySafeCritical]
