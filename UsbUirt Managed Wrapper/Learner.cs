@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using UsbUirt.Enums;
 using UsbUirt.EventArgs;
 using UsbUirt.State;
@@ -12,9 +14,10 @@ namespace UsbUirt
 {
     public class Learner : DriverUserBase
     {
-        private CodeFormat _defaultLearnCodeFormat = CodeFormat.Pronto;
-        private LearnCodeModifier _defaultLearnCodeModifier = LearnCodeModifier.Default;
-        private readonly Hashtable _learnStates = new Hashtable();
+        private CodeFormat _defaultLearnCodeFormat;
+        private LearnCodeModifier _defaultLearnCodeModifier;
+        //private readonly Hashtable _learnStates = new Hashtable();
+        private readonly ConcurrentDictionary<object, LearnState> _learnStates = new ConcurrentDictionary<object, LearnState>();
 
         public CodeFormat DefaultCodeFormat
         {
@@ -40,12 +43,20 @@ namespace UsbUirt
             set { _defaultLearnCodeModifier = value; }
         }
 
-        public Learner()
+        public Learner(CodeFormat defaultCodeFormat = CodeFormat.Pronto, 
+                       LearnCodeModifier defaultLearnCodeModifier = LearnCodeModifier.Default)
         {
+            _defaultLearnCodeFormat = defaultCodeFormat;
+            _defaultLearnCodeModifier = defaultLearnCodeModifier;
         }
 
-        public Learner(Driver driver) : base(driver)
+        public Learner(Driver driver,
+                       CodeFormat defaultCodeFormat = CodeFormat.Pronto,
+                       LearnCodeModifier defaultLearnCodeModifier = LearnCodeModifier.Default)
+            : base(driver)
         {
+            _defaultLearnCodeFormat = defaultCodeFormat;
+            _defaultLearnCodeModifier = defaultLearnCodeModifier;
         }
 
 
@@ -77,52 +88,7 @@ namespace UsbUirt
         /// Raised periodically during learning, to provided feedback on progress.
         /// </summary>
         public event LearningEventHandler Learning;
-
-        /// <summary>
-        /// Learns an IR code synchronously using the default code format.
-        /// </summary>
-        /// <returns>The IR code that was learned, or null if learning failed.</returns>
-        public string Learn()
-        {
-            CheckDisposed();
-            return Learn(_defaultLearnCodeFormat, _defaultLearnCodeModifier, TimeSpan.Zero);
-        }
-
-        /// <summary>
-        /// Learns an IR code synchronously.
-        /// </summary>
-        /// <param name="codeFormat">The format of the IR code to use in learning.</param>
-        /// <returns>The IR code that was learned, or null if learning failed.</returns>
-        public string Learn(CodeFormat codeFormat)
-        {
-            CheckDisposed();
-            return Learn(codeFormat, _defaultLearnCodeModifier, TimeSpan.Zero);
-        }
-
-        /// <summary>
-        /// Learns an IR code synchronously using the default code format.
-        /// </summary>
-        /// <param name="timeout">The timeout after which to abort learning if it has not completed.</param>
-        /// <returns>The IR code that was learned, or null if learning failed.</returns>
-        public string Learn(TimeSpan timeout)
-        {
-            CheckDisposed();
-            return Learn(_defaultLearnCodeFormat, _defaultLearnCodeModifier, timeout);
-        }
-
-        /// <summary>
-        /// Learns an IR code synchronously.
-        /// </summary>
-        /// <param name="codeFormat">The format of the IR code to use in learning.</param>
-        /// <param name="learnCodeFormat">The modifier used for the code format.</param>
-        /// <param name="timeout">The timeout after which to abort learning if it has not completed.</param>
-        /// <returns>The IR code that was learned, or null if learning failed.</returns>
-        public string Learn(CodeFormat codeFormat, LearnCodeModifier learnCodeFormat, TimeSpan timeout)
-        {
-            CheckDisposed();
-            return Learn(codeFormat, learnCodeFormat, 0, timeout);
-        }
-
+        
         /// <summary>
         /// Learns an IR code synchronously.
         /// </summary>
@@ -132,126 +98,96 @@ namespace UsbUirt
         /// <param name="timeout">The timeout after which to abort learning if it has not completed.</param>
         /// <returns>The IR code that was learned, or null if learning failed.</returns>
         public string Learn(
-            CodeFormat codeFormat,
-            LearnCodeModifier learnCodeFormat,
-            uint forcedFrequency,
-            TimeSpan timeout)
+            CodeFormat? codeFormat = null,
+            LearnCodeModifier? learnCodeFormat = null,
+            uint? forcedFrequency = null,
+            TimeSpan? timeout = null)
         {
             CheckDisposed();
+            timeout = timeout ?? TimeSpan.Zero;
             if (timeout < TimeSpan.Zero)
             {
                 throw new ArgumentOutOfRangeException("timeout", "timeout cannot be negative");
             }
 
-            using (var results = new SyncLearnResults())
+            var learnTask = LearnAsync(codeFormat, learnCodeFormat, forcedFrequency);
+            if (TimeSpan.Zero == timeout)
             {
-                this.LearnCompleted += ManagedWrapper_LearnCompleted;
-
-                try
-                {
-                    LearnAsync(codeFormat, learnCodeFormat, forcedFrequency, results);
-                    if (TimeSpan.Zero == timeout)
-                    {
-                        results.WaitEvent.WaitOne();
-                        return results.LearnCompletedEventArgs.Code;
-                    }
-                    else if (results.WaitEvent.WaitOne(timeout, false))
-                    {
-                        if (null != results.LearnCompletedEventArgs.Error)
-                        {
-                            throw results.LearnCompletedEventArgs.Error;
-                        }
-                        else if (results.LearnCompletedEventArgs.Cancelled)
-                        {
-                            return null;
-                        }
-                        return results.LearnCompletedEventArgs.Code;
-                    }
-                    else
-                    {
-                        LearnAsyncCancel(results);
-                        return null;
-                    }
-                }
-                finally
-                {
-                    this.LearnCompleted -= ManagedWrapper_LearnCompleted;
-                }
+                return learnTask.Result;
             }
+            if (learnTask.Wait(timeout.Value))
+            {
+                if (learnTask.Exception != null)
+                {
+                    throw learnTask.Exception;
+                }
+                if (learnTask.IsCanceled)
+                {
+                    return null;
+                }
+                return learnTask.Result;
+            }
+            LearnAsyncCancel();
+            return null;
         }
-
-        /// <summary>
-        /// Learns an IR code asynchronously using the default code format.
-        /// </summary>
-        public void LearnAsync()
-        {
-            CheckDisposed();
-            LearnAsync(_defaultLearnCodeFormat, _defaultLearnCodeModifier, null);
-        }
-
-        /// <summary>
-        /// Learns an IR code asynchronously.
-        /// </summary>
-        /// <param name="codeFormat">The format of the IR code to use in learning.</param>
-        public void LearnAsync(CodeFormat codeFormat)
-        {
-            CheckDisposed();
-            LearnAsync(codeFormat, _defaultLearnCodeModifier, null);
-        }
-
+        
         /// <summary>
         /// Learns an IR code asynchronously.
         /// </summary>
         /// <param name="codeFormat">The format of the IR code to use in learning.</param>
-        /// <param name="learnCodeFormat">The modifier used for the code format.</param>
-        /// <param name="userState">An optional user state object that will be passed to the 
-        /// Learning and LearnCompleted events and which can be used when calling LearnAsyncCancel().</param>
-        public void LearnAsync(CodeFormat codeFormat, LearnCodeModifier learnCodeFormat, object userState)
-        {
-            CheckDisposed();
-            LearnAsync(codeFormat, learnCodeFormat, 0, userState);
-        }
-
-        /// <summary>
-        /// Learns an IR code asynchronously.
-        /// </summary>
-        /// <param name="codeFormat">The format of the IR code to use in learning.</param>
-        /// <param name="learnCodeFormat">The modifier used for the code format.</param>
+        /// <param name="learnCodeModifier">The modifier used for the code format.</param>
         /// <param name="forcedFrequency">The frequency to use in learning.</param>
         /// <param name="userState">An optional user state object that will be passed to the 
         /// Learning and LearnCompleted events and which can be used when calling LearnAsyncCancel().</param>
-        public void LearnAsync(
-            CodeFormat codeFormat,
-            LearnCodeModifier learnCodeFormat,
-            uint forcedFrequency,
-            object userState)
+        public Task<string> LearnAsync(
+            CodeFormat? codeFormat = null,
+            LearnCodeModifier? learnCodeModifier = null,
+            uint? forcedFrequency = null,
+            object userState = null)
         {
             CheckDisposed();
-            if (LearnCodeModifier.ForceFrequency == learnCodeFormat)
+            if (learnCodeModifier == LearnCodeModifier.ForceFrequency)
             {
-                if (0 == forcedFrequency)
+                if (forcedFrequency == 0)
                 {
-                    throw new ArgumentException("forcedFrequency",
-                        "forcedFrequency must be specified when using LearnCodeModifier.ForceFrequency");
+                    throw new ArgumentException("forcedFrequency must be specified when using LearnCodeModifier.ForceFrequency",
+                        "forcedFrequency");
                 }
             }
             else
             {
-                if (0 != forcedFrequency)
+                if (forcedFrequency != null && forcedFrequency != 0)
                 {
-                    throw new ArgumentException("forcedFrequency",
-                        "forcedFrequency can only be specified when using LearnCodeModifier.ForceFrequency");
+                    throw new ArgumentException("forcedFrequency can only be specified when using LearnCodeModifier.ForceFrequency",
+                        "forcedFrequency");
                 }
             }
 
-            object learnStatesKey = null == userState ? this : userState;
-            var learnState = new LearnState(codeFormat, learnCodeFormat, forcedFrequency, userState);
+            object learnStatesKey = userState ?? this;
+            var cancellationSource = new CancellationTokenSource();
+            var learnState = new LearnState(
+                    codeFormat ?? _defaultLearnCodeFormat, 
+                    learnCodeModifier ?? _defaultLearnCodeModifier, 
+                    cancellationSource, 
+                    forcedFrequency ?? 0, 
+                    userState);
             _learnStates[learnStatesKey] = learnState;
 
-            if (false == ThreadPool.QueueUserWorkItem(DoLearn, learnState))
+            var learnTask = Task<string>.Factory.StartNew(LearnInternal, learnState, cancellationSource.Token);
+            learnTask.ContinueWith(t => 
             {
-                throw new ApplicationException("Unable to QueueUserWorkItem");
-            }
+                LearnCompletedEventHandler temp = LearnCompleted;
+                if (temp != null)
+                {
+                    temp(this,
+                        new LearnCompletedEventArgs(t.Exception,
+                            learnState.WasAborted,
+                            t.Result,
+                            learnState.UserState));
+                }
+            });
+
+            return learnTask;
         }
 
         /// <summary>
@@ -270,8 +206,8 @@ namespace UsbUirt
         public bool LearnAsyncCancel(object userState)
         {
             CheckDisposed();
-            object learnStatesKey = null == userState ? this : userState;
-            var learnState = _learnStates[learnStatesKey] as LearnState;
+            object learnStatesKey = userState ?? this;
+            var learnState = _learnStates[learnStatesKey];
             if (null != learnState)
             {
                 learnState.Abort();
@@ -326,9 +262,10 @@ namespace UsbUirt
             IntPtr reserved1);
 
         [SecuritySafeCritical]
-        private void DoLearn(object state)
+        //TODO: Hate the loss of type safety here
+        private string LearnInternal(object state)
         {
-            var learnState = state as LearnState;
+            var learnState = (LearnState)state;
             var outCode = new StringBuilder(4096);
             var userDataHandle = new GCHandle();
             IntPtr userDataPtr = IntPtr.Zero;
@@ -337,9 +274,8 @@ namespace UsbUirt
             {
                 userDataHandle = GCHandle.Alloc(learnState);
                 userDataPtr = (IntPtr)userDataHandle;
-                Exception error = null;
 
-                if (false == UUIRTLearnIR(
+                if (!UUIRTLearnIR(
                     DriverHandle,
                     (int)learnState.CodeFormat | (int)learnState.LearnCodeModifier,
                     outCode,
@@ -350,30 +286,19 @@ namespace UsbUirt
                     IntPtr.Zero,
                     IntPtr.Zero))
                 {
-                    try
-                    {
-                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                    }
-                    catch (Exception ex)
-                    {
-                        error = ex;
-                    }
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                }
+
+                if (learnState.WasAborted)
+                {
+                    learnState.CancelationToken.Cancel();
                 }
 
                 if (userDataHandle.IsAllocated)
                 {
                     userDataHandle.Free();
                 }
-
-                LearnCompletedEventHandler temp = LearnCompleted;
-                if (null != temp)
-                {
-                    temp(this,
-                        new LearnCompletedEventArgs(error,
-                            learnState.WasAborted,
-                            outCode.ToString(),
-                            learnState.UserState));
-                }
+                return outCode.ToString();
             }
             finally
             {
@@ -397,17 +322,6 @@ namespace UsbUirt
             {
                 temp(this, new LearningEventArgs(progress, sigQuality, carrierFreq, state));
             }
-        }
-
-        private void ManagedWrapper_LearnCompleted(object sender, LearnCompletedEventArgs e)
-        {
-            var syncLearnResults = e.UserState as SyncLearnResults;
-            if (null == syncLearnResults)
-            {
-                throw new ApplicationException("invalid userState received");
-            }
-            syncLearnResults.LearnCompletedEventArgs = e;
-            syncLearnResults.WaitEvent.Set();
         }
     }
 }

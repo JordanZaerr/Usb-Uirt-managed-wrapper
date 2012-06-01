@@ -124,9 +124,6 @@
     <Compile Include="EventArgs\ReceivedEventArgs.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="State\SyncLearnResults.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="EventArgs\TransmitCompletedEventArgs.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -29,11 +29,6 @@
             Gets the optional user state.
             </summary>
         </member>
-        <member name="T:UsbUirt.State.SyncLearnResults">
-            <summary>
-            Summary description for SyncLearnResults.
-            </summary>
-        </member>
         <member name="T:UsbUirt.State.LearnState">
             <summary>
             Summary description for LearnState.
@@ -214,36 +209,7 @@
             Gets the optional user state.
             </summary>
         </member>
-        <member name="M:UsbUirt.Learner.Learn">
-            <summary>
-            Learns an IR code synchronously using the default code format.
-            </summary>
-            <returns>The IR code that was learned, or null if learning failed.</returns>
-        </member>
-        <member name="M:UsbUirt.Learner.Learn(UsbUirt.Enums.CodeFormat)">
-            <summary>
-            Learns an IR code synchronously.
-            </summary>
-            <param name="codeFormat">The format of the IR code to use in learning.</param>
-            <returns>The IR code that was learned, or null if learning failed.</returns>
-        </member>
-        <member name="M:UsbUirt.Learner.Learn(System.TimeSpan)">
-            <summary>
-            Learns an IR code synchronously using the default code format.
-            </summary>
-            <param name="timeout">The timeout after which to abort learning if it has not completed.</param>
-            <returns>The IR code that was learned, or null if learning failed.</returns>
-        </member>
-        <member name="M:UsbUirt.Learner.Learn(UsbUirt.Enums.CodeFormat,UsbUirt.Enums.LearnCodeModifier,System.TimeSpan)">
-            <summary>
-            Learns an IR code synchronously.
-            </summary>
-            <param name="codeFormat">The format of the IR code to use in learning.</param>
-            <param name="learnCodeFormat">The modifier used for the code format.</param>
-            <param name="timeout">The timeout after which to abort learning if it has not completed.</param>
-            <returns>The IR code that was learned, or null if learning failed.</returns>
-        </member>
-        <member name="M:UsbUirt.Learner.Learn(UsbUirt.Enums.CodeFormat,UsbUirt.Enums.LearnCodeModifier,System.UInt32,System.TimeSpan)">
+        <member name="M:UsbUirt.Learner.Learn(System.Nullable{UsbUirt.Enums.CodeFormat},System.Nullable{UsbUirt.Enums.LearnCodeModifier},System.Nullable{System.UInt32},System.Nullable{System.TimeSpan})">
             <summary>
             Learns an IR code synchronously.
             </summary>
@@ -253,32 +219,12 @@
             <param name="timeout">The timeout after which to abort learning if it has not completed.</param>
             <returns>The IR code that was learned, or null if learning failed.</returns>
         </member>
-        <member name="M:UsbUirt.Learner.LearnAsync">
-            <summary>
-            Learns an IR code asynchronously using the default code format.
-            </summary>
-        </member>
-        <member name="M:UsbUirt.Learner.LearnAsync(UsbUirt.Enums.CodeFormat)">
+        <member name="M:UsbUirt.Learner.LearnAsync(System.Nullable{UsbUirt.Enums.CodeFormat},System.Nullable{UsbUirt.Enums.LearnCodeModifier},System.Nullable{System.UInt32},System.Object)">
             <summary>
             Learns an IR code asynchronously.
             </summary>
             <param name="codeFormat">The format of the IR code to use in learning.</param>
-        </member>
-        <member name="M:UsbUirt.Learner.LearnAsync(UsbUirt.Enums.CodeFormat,UsbUirt.Enums.LearnCodeModifier,System.Object)">
-            <summary>
-            Learns an IR code asynchronously.
-            </summary>
-            <param name="codeFormat">The format of the IR code to use in learning.</param>
-            <param name="learnCodeFormat">The modifier used for the code format.</param>
-            <param name="userState">An optional user state object that will be passed to the 
-            Learning and LearnCompleted events and which can be used when calling LearnAsyncCancel().</param>
-        </member>
-        <member name="M:UsbUirt.Learner.LearnAsync(UsbUirt.Enums.CodeFormat,UsbUirt.Enums.LearnCodeModifier,System.UInt32,System.Object)">
-            <summary>
-            Learns an IR code asynchronously.
-            </summary>
-            <param name="codeFormat">The format of the IR code to use in learning.</param>
-            <param name="learnCodeFormat">The modifier used for the code format.</param>
+            <param name="learnCodeModifier">The modifier used for the code format.</param>
             <param name="forcedFrequency">The frequency to use in learning.</param>
             <param name="userState">An optional user state object that will be passed to the 
             Learning and LearnCompleted events and which can be used when calling LearnAsyncCancel().</param>

@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Security;
+using System.Threading;
 using UsbUirt.Enums;
 
 namespace UsbUirt.State
@@ -12,7 +13,8 @@ namespace UsbUirt.State
     {
         private readonly CodeFormat _codeFormat;
         private readonly uint _forcedFrequency;
-        private readonly LearnCodeModifier _learnCodeFormat;
+        private readonly LearnCodeModifier _learnCodeModifier;
+        private readonly CancellationTokenSource _cancellationSource;
         private readonly object _userState;
         private IntPtr _abort;
         private bool _disposed;
@@ -20,16 +22,23 @@ namespace UsbUirt.State
         [SecuritySafeCritical]
         internal LearnState(
             CodeFormat codeFormat,
-            LearnCodeModifier learnCodeFormat,
+            LearnCodeModifier learnCodeModifier,
+            CancellationTokenSource cancellationSource,
             uint forcedFrequency,
             object userState)
         {
             _codeFormat = codeFormat;
-            _learnCodeFormat = learnCodeFormat;
+            _learnCodeModifier = learnCodeModifier;
+            _cancellationSource = cancellationSource;
             _forcedFrequency = forcedFrequency;
             _userState = userState;
             _abort = Marshal.AllocHGlobal(Marshal.SizeOf(typeof (Int32)));
             Marshal.WriteInt32(_abort, 0);
+        }
+
+        internal CancellationTokenSource CancelationToken 
+        {
+            get { return _cancellationSource; }
         }
 
         internal IntPtr AbortFlag
@@ -49,7 +58,7 @@ namespace UsbUirt.State
 
         internal LearnCodeModifier LearnCodeModifier
         {
-            get { return _learnCodeFormat; }
+            get { return _learnCodeModifier; }
         }
 
         internal object UserState
@@ -77,6 +86,7 @@ namespace UsbUirt.State
         internal void Abort()
         {
             SetInt();
+            _cancellationSource.Cancel();
         }
 
         #region IDisposable Members

@@ -182,6 +182,7 @@ namespace UsbUirt
             int? inactivityWaitTime,
             Emitter? emitter)
         {
+            //This is kind of hackish...
             codeFormat = codeFormat ?? _defaultCodeFormat;
             repeatCount = repeatCount ?? _defaultRepeatCount;
             inactivityWaitTime = inactivityWaitTime ?? _defaultInactivityWaitTime;

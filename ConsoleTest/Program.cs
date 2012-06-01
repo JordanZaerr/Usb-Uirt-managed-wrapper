@@ -28,7 +28,10 @@ namespace ConsoleTest
                 Console.ReadLine();
                 var transmitter = new Transmitter(driver);
                 transmitter.TransmitCompleted += OnTransmitComplete;
-                transmitter.TransmitAsync(result, emitter: Emitter.Internal);
+                transmitter.TransmitAsync(result, emitter: Emitter.Internal)
+                    .ContinueWith(t => Console.WriteLine(t.Exception == null 
+                                        ? "Transmit Complete - from task" 
+                                        : t.Exception.ToString()));
                 Console.ReadLine();
             }
         }
@@ -40,10 +43,7 @@ namespace ConsoleTest
 
         private static void OnTransmitComplete(object sender, TransmitCompletedEventArgs e)
         {
-            if(e.Error == null)
-                Console.WriteLine("Transmit Complete");
-            else
-                Console.WriteLine(e.Error.ToString());
+            Console.WriteLine(e.Error == null ? "Transmit Complete - from event" : e.Error.ToString());
         }
 
         private static void OnLearning(object sender, LearningEventArgs e)
