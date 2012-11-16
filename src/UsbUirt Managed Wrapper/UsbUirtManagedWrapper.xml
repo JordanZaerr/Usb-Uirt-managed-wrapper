@@ -164,26 +164,6 @@
             Pronto-RAW codeFormat to offer the best compatibility; compressed-UIRT format 
             is often too limiting, although it does produce the smallest codes.</remarks>
         </member>
-        <member name="E:UsbUirt.Learner.LearnCompleted">
-            <summary>
-            Raised when learning, begun via LearnAsync(), has completed.
-            </summary>
-        </member>
-        <member name="E:UsbUirt.Learner.Learning">
-            <summary>
-            Raised periodically during learning, to provided feedback on progress.
-            </summary>
-        </member>
-        <member name="T:UsbUirt.Learner.LearnCompletedEventHandler">
-            <summary>
-            The delegate used for the LarnCompleted event.
-            </summary>
-        </member>
-        <member name="T:UsbUirt.Learner.LearningEventHandler">
-            <summary>
-            The delegate used for the Learning event.
-            </summary>
-        </member>
         <member name="T:UsbUirt.Learner.LearnCallback">
             <summary>
             Delegate used as a callback during learning in order to update display the progress
@@ -525,6 +505,17 @@
             <remarks>
             The external connection is a normal headphone jack, that is where the Left/Right channel comes from
             </remarks>
+        </member>
+        <member name="T:UsbUirt.LearnHelper">
+            <summary>
+            This class returns the code that you send and the 
+            code that you should expect to receive for a given command.
+            </summary>
+        </member>
+        <member name="P:UsbUirt.EventArgs.LearnHelperCompletedEventArgs.ReceiveCode">
+            <summary>
+            The code you should expect to receive from this command.
+            </summary>
         </member>
     </members>
 </doc>

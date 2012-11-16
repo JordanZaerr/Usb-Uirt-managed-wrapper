@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Security;
@@ -16,7 +15,6 @@ namespace UsbUirt
     {
         private CodeFormat _defaultLearnCodeFormat;
         private LearnCodeModifier _defaultLearnCodeModifier;
-        //private readonly Hashtable _learnStates = new Hashtable();
         private readonly ConcurrentDictionary<object, LearnState> _learnStates = new ConcurrentDictionary<object, LearnState>();
 
         public CodeFormat DefaultCodeFormat
@@ -59,17 +57,10 @@ namespace UsbUirt
             _defaultLearnCodeModifier = defaultLearnCodeModifier;
         }
 
+        public event EventHandler<LearnCompletedEventArgs> LearnCompleted;
 
-        /// <summary>
-        /// The delegate used for the LarnCompleted event.
-        /// </summary>
-        public delegate void LearnCompletedEventHandler(object sender, LearnCompletedEventArgs e);
-
-        /// <summary>
-        /// The delegate used for the Learning event.
-        /// </summary>
-        public delegate void LearningEventHandler(object sender, LearningEventArgs e);
-
+        public event EventHandler<LearningEventArgs> Learning;
+        
         /// <summary>
         /// Delegate used as a callback during learning in order to update display the progress
         /// </summary>
@@ -78,16 +69,6 @@ namespace UsbUirt
             uint sigQuality,
             uint carrierFreq,
             IntPtr userData);
-
-        /// <summary>
-        /// Raised when learning, begun via LearnAsync(), has completed.
-        /// </summary>
-        public event LearnCompletedEventHandler LearnCompleted;
-
-        /// <summary>
-        /// Raised periodically during learning, to provided feedback on progress.
-        /// </summary>
-        public event LearningEventHandler Learning;
         
         /// <summary>
         /// Learns an IR code synchronously.
@@ -176,14 +157,23 @@ namespace UsbUirt
             var learnTask = Task<string>.Factory.StartNew(LearnInternal, learnState, cancellationSource.Token);
             learnTask.ContinueWith(t => 
             {
-                LearnCompletedEventHandler temp = LearnCompleted;
-                if (temp != null)
+                try
                 {
-                    temp(this,
-                        new LearnCompletedEventArgs(t.Exception,
-                            learnState.WasAborted,
-                            t.Result,
-                            learnState.UserState));
+                    var temp = LearnCompleted;
+                    if (temp != null)
+                    {
+                        temp(this,
+                            new LearnCompletedEventArgs(t.Exception,
+                                learnState.WasAborted,
+                                t.Result,
+                                learnState.UserState));
+                    }
+                }
+                finally
+                {
+                    learnState.Dispose();
+                    learnStatesKey = null == learnState.UserState ? this : t.AsyncState;
+                    _learnStates[learnStatesKey] = null;
                 }
             });
 
@@ -270,42 +260,33 @@ namespace UsbUirt
             var userDataHandle = new GCHandle();
             IntPtr userDataPtr = IntPtr.Zero;
 
-            try
+            userDataHandle = GCHandle.Alloc(learnState);
+            userDataPtr = (IntPtr)userDataHandle;
+
+            if (!UUIRTLearnIR(
+                DriverHandle,
+                (int)learnState.CodeFormat | (int)learnState.LearnCodeModifier,
+                outCode,
+                LearnCallbackProc,
+                userDataPtr,
+                learnState.AbortFlag,
+                learnState.ForcedFrequency,
+                IntPtr.Zero,
+                IntPtr.Zero))
             {
-                userDataHandle = GCHandle.Alloc(learnState);
-                userDataPtr = (IntPtr)userDataHandle;
-
-                if (!UUIRTLearnIR(
-                    DriverHandle,
-                    (int)learnState.CodeFormat | (int)learnState.LearnCodeModifier,
-                    outCode,
-                    LearnCallbackProc,
-                    userDataPtr,
-                    learnState.AbortFlag,
-                    learnState.ForcedFrequency,
-                    IntPtr.Zero,
-                    IntPtr.Zero))
-                {
-                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                }
-
-                if (learnState.WasAborted)
-                {
-                    learnState.CancelationToken.Cancel();
-                }
-
-                if (userDataHandle.IsAllocated)
-                {
-                    userDataHandle.Free();
-                }
-                return outCode.ToString();
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             }
-            finally
+
+            if (learnState.WasAborted)
             {
-                learnState.Dispose();
-                object learnStatesKey = null == learnState.UserState ? this : state;
-                _learnStates[learnStatesKey] = null;
+                learnState.CancelationToken.Cancel();
             }
+
+            if (userDataHandle.IsAllocated)
+            {
+                userDataHandle.Free();
+            }
+            return outCode.ToString();
         }
 
         [SecuritySafeCritical]
@@ -317,7 +298,7 @@ namespace UsbUirt
         {
             var userDataHandle = (GCHandle)userState;
             object state = userDataHandle.Target;
-            LearningEventHandler temp = Learning;
+            var temp = Learning;
             if (null != temp)
             {
                 temp(this, new LearningEventArgs(progress, sigQuality, carrierFreq, state));

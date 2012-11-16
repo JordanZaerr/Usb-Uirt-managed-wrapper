@@ -9,6 +9,29 @@ namespace ConsoleTest
     {
         static void Main()
         {
+            //LearnAndTransmitACode();
+            LearnSendCodeAndReceiveCode();
+
+            Console.ReadLine();
+        }
+
+        private static void LearnSendCodeAndReceiveCode()
+        {
+            using (var learnHelper = new LearnHelper())
+            {
+                Console.WriteLine("Learning...");
+                learnHelper.LearningComplete += OnSendReceiveLearnCompleted;
+                learnHelper.Learn();
+            }
+        }
+
+        private static void OnSendReceiveLearnCompleted(object sender, LearnHelperCompletedEventArgs e)
+        {
+            Console.WriteLine("Learn Complete, SendCode: {0}, ReceiveCode: {1}", e.Code, e.ReceiveCode);
+        }
+
+        private static void LearnAndTransmitACode()
+        {
             using (var driver = new Driver())
             {
                 Console.WriteLine(Driver.GetVersion(driver).ToString());
@@ -29,10 +52,9 @@ namespace ConsoleTest
                 var transmitter = new Transmitter(driver);
                 transmitter.TransmitCompleted += OnTransmitComplete;
                 transmitter.TransmitAsync(result, emitter: Emitter.Internal)
-                    .ContinueWith(t => Console.WriteLine(t.Exception == null 
-                                        ? "Transmit Complete - from task" 
+                    .ContinueWith(t => Console.WriteLine(t.Exception == null
+                                        ? "Transmit Complete - from task"
                                         : t.Exception.ToString()));
-                Console.ReadLine();
             }
         }
 
