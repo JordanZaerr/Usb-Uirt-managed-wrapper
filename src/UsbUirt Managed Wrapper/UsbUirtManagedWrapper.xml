@@ -4,86 +4,6 @@
         <name>UsbUirtManagedWrapper</name>
     </assembly>
     <members>
-        <member name="T:UsbUirt.EventArgs.LearnCompletedEventArgs">
-            <summary>
-            Event args passed to the LearnCompleted event.
-            </summary>
-        </member>
-        <member name="P:UsbUirt.EventArgs.LearnCompletedEventArgs.Cancelled">
-            <summary>
-            Gets whether learning was cancelled.
-            </summary>
-        </member>
-        <member name="P:UsbUirt.EventArgs.LearnCompletedEventArgs.Code">
-            <summary>
-            Gets the learned code, if learning completed successfully.
-            </summary>
-        </member>
-        <member name="P:UsbUirt.EventArgs.LearnCompletedEventArgs.Error">
-            <summary>
-            Gets any exception thrown while learning.
-            </summary>
-        </member>
-        <member name="P:UsbUirt.EventArgs.LearnCompletedEventArgs.UserState">
-            <summary>
-            Gets the optional user state.
-            </summary>
-        </member>
-        <member name="T:UsbUirt.State.LearnState">
-            <summary>
-            Summary description for LearnState.
-            </summary>
-        </member>
-        <member name="T:UsbUirt.EventArgs.ReceivedEventArgs">
-            <summary>
-            Event args passed to the Received event.
-            </summary>
-        </member>
-        <member name="P:UsbUirt.EventArgs.ReceivedEventArgs.IRCode">
-            <summary>
-            Gets the received IR code.
-            </summary>
-        </member>
-        <member name="M:UsbUirt.Receiver.UUIRTSetReceiveCallback(System.IntPtr,UsbUirt.Receiver.ReceiveCallback,System.IntPtr)">
-            <summary>
-            Registers a receive callback function which the driver will call when an IR code 
-            is received from the air.
-            
-            typedef void (WINAPI *PUUCALLBACKPROC) (char *IREventStr, void *userData);
-            When the USB-UIRT receives a code from the air, it will call the callback function
-            with a null-terminated, twelve-character (like IRMAN) ir code in IREventStr. 
-            </summary>
-            <remarks>
-            The types of codes which are passed to IREventStr are not the same as the type
-            of codes passed back from a UUIRTLearnIR call (the codes from a UUIRTLearnIR 
-            are much larger and contain all the necessary data to reproduce a code, 
-            whereas the codes passed to IREventStr are simpler representations of IR codes 
-            only long enough to be unique).
-            </remarks>
-            <param name="hDrvHandle">Handle to to USB-UIRT returned by UUIRTOpen</param>
-            <param name="receiveProc">the address of a 
-            PUUCALLBACKPROC function</param>
-            <param name="userData">a general-purpose 
-            32-bit value supplied by the caller to UUIRTSetReceiveCallback. This parameter 
-            is useful for carrying context information, etc. Will be passed to receiveProc.</param>
-            <returns>TRUE on success</returns>
-        </member>
-        <member name="E:UsbUirt.Receiver.Received">
-            <summary>
-            Raised when IR input is received.
-            </summary>
-            
-        </member>
-        <member name="T:UsbUirt.Receiver.ReceivedEventHandler">
-            <summary>
-            The delegate used for the Received event.
-            </summary>
-        </member>
-        <member name="T:UsbUirt.Receiver.ReceiveCallback">
-            <summary>
-            Delegate used to receive callbacks when IR input is received
-            </summary>
-        </member>
         <member name="M:UsbUirt.Transmitter.#ctor(UsbUirt.Enums.Emitter,UsbUirt.Enums.CodeFormat,System.Int32,System.Int32)">
             <summary>
             Creates an instance of the Transmitter class that can be used to transmit IR codes.
@@ -168,45 +88,14 @@
             Raised when transmission, begun via TransmitAsync(), has completed.
             </summary>
         </member>
-        <member name="T:UsbUirt.Enums.Emitter">
+        <member name="T:UsbUirt.EventArgs.ReceivedEventArgs">
             <summary>
-            Choose which emitter to use to send the IR signal
+            Event args passed to the Received event.
             </summary>
         </member>
-        <member name="F:UsbUirt.Enums.Emitter.Internal">
+        <member name="P:UsbUirt.EventArgs.ReceivedEventArgs.IRCode">
             <summary>
-            The internal IR blaster
-            </summary>
-        </member>
-        <member name="F:UsbUirt.Enums.Emitter.External1">
-            <summary>
-            The external emitter on the 'Right' channel
-            </summary>
-            <remarks>
-            The external connection is a normal headphone jack, that is where the Left/Right channel comes from
-            </remarks>
-        </member>
-        <member name="F:UsbUirt.Enums.Emitter.External2">
-            <summary>
-            The external emitter on the 'Left' channel
-            </summary>
-            <remarks>
-            The external connection is a normal headphone jack, that is where the Left/Right channel comes from
-            </remarks>
-        </member>
-        <member name="T:UsbUirt.EventArgs.TransmitCompletedEventArgs">
-            <summary>
-            Event args passed to the TransmitCompleted event.
-            </summary>
-        </member>
-        <member name="P:UsbUirt.EventArgs.TransmitCompletedEventArgs.Error">
-            <summary>
-            Gets any exception thrown while transmitting.
-            </summary>
-        </member>
-        <member name="P:UsbUirt.EventArgs.TransmitCompletedEventArgs.UserState">
-            <summary>
-            Gets the optional user state.
+            Gets the received IR code.
             </summary>
         </member>
         <member name="M:UsbUirt.Learner.Learn(System.Nullable{UsbUirt.Enums.CodeFormat},System.Nullable{UsbUirt.Enums.LearnCodeModifier},System.Nullable{System.UInt32},System.Nullable{System.TimeSpan})">
@@ -300,6 +189,66 @@
             Delegate used as a callback during learning in order to update display the progress
             </summary>
         </member>
+        <member name="T:UsbUirt.Enums.CodeFormat">
+            <summary>
+            Defines the code formats used when transmitting or learning IR codes.
+            </summary>
+        </member>
+        <member name="F:UsbUirt.Enums.CodeFormat.Uuirt">
+            <summary>
+            Uuirt code format
+            </summary>
+        </member>
+        <member name="F:UsbUirt.Enums.CodeFormat.Pronto">
+            <summary>
+            Pronto format
+            </summary>
+        </member>
+        <member name="T:UsbUirt.EventArgs.LearnCompletedEventArgs">
+            <summary>
+            Event args passed to the LearnCompleted event.
+            </summary>
+        </member>
+        <member name="P:UsbUirt.EventArgs.LearnCompletedEventArgs.Cancelled">
+            <summary>
+            Gets whether learning was cancelled.
+            </summary>
+        </member>
+        <member name="P:UsbUirt.EventArgs.LearnCompletedEventArgs.Code">
+            <summary>
+            Gets the learned code, if learning completed successfully.
+            </summary>
+        </member>
+        <member name="P:UsbUirt.EventArgs.LearnCompletedEventArgs.Error">
+            <summary>
+            Gets any exception thrown while learning.
+            </summary>
+        </member>
+        <member name="P:UsbUirt.EventArgs.LearnCompletedEventArgs.UserState">
+            <summary>
+            Gets the optional user state.
+            </summary>
+        </member>
+        <member name="T:UsbUirt.EventArgs.TransmitCompletedEventArgs">
+            <summary>
+            Event args passed to the TransmitCompleted event.
+            </summary>
+        </member>
+        <member name="P:UsbUirt.EventArgs.TransmitCompletedEventArgs.Error">
+            <summary>
+            Gets any exception thrown while transmitting.
+            </summary>
+        </member>
+        <member name="P:UsbUirt.EventArgs.TransmitCompletedEventArgs.UserState">
+            <summary>
+            Gets the optional user state.
+            </summary>
+        </member>
+        <member name="T:UsbUirt.State.LearnState">
+            <summary>
+            Summary description for LearnState.
+            </summary>
+        </member>
         <member name="T:UsbUirt.EventArgs.LearningEventArgs">
             <summary>
             Event args passed to the Learning event.
@@ -325,19 +274,57 @@
             Gets the optional user state.
             </summary>
         </member>
-        <member name="T:UsbUirt.Enums.CodeFormat">
+        <member name="M:UsbUirt.GeneralSettings.UUIRTGetUUIRTConfig(System.IntPtr,System.UInt32@)">
             <summary>
-            Defines the code formats used when transmitting or learning IR codes.
+            Retrieves the current feature configuration bits from the USB-UIRT's nonvolatile 
+            configuration memory. These various configuration bits control how the USB-UIRT 
+            behaves. Most are reserved for future implementation and should be read and 
+            written as Zero.
+            </summary>
+            <param name="hDrvHandle">Handle to to USB-UIRT returned by UUIRTOpen</param>
+            <param name="uConfig">Integer representation of USB-UIRT configuration</param>
+            <returns>TRUE on success</returns>
+            <remarks> Using this API call is optional and is only needed to support 
+            changing USB-UIRT's private preferences</remarks>
+        </member>
+        <member name="M:UsbUirt.GeneralSettings.UUIRTSetUUIRTConfig(System.IntPtr,System.UInt32)">
+            <summary>
+            Configures the current feature configuration bits for the USB-UIRT's nonvolatile 
+            configuration memory. These various configuration bits control how the USB-UIRT 
+            behaves.
+            </summary>
+            <param name="hDrvHandle">Handle to to USB-UIRT returned by UUIRTOpen</param>
+            <param name="uConfig">Integer representation of USB-UIRT configuration</param>
+            <returns>TRUE on success</returns>
+        </member>
+        <member name="T:UsbUirt.GeneralSettings.UUIRTConfigBits">
+            <summary>
+            Flags used when getting or setting the USB-UIRT configuration
             </summary>
         </member>
-        <member name="F:UsbUirt.Enums.CodeFormat.Uuirt">
+        <member name="F:UsbUirt.GeneralSettings.UUIRTConfigBits.BlinkOnReceive">
             <summary>
-            Uuirt code format
+            Indicator LED on USB-UIRT blinks when remote signals are received
             </summary>
         </member>
-        <member name="F:UsbUirt.Enums.CodeFormat.Pronto">
+        <member name="F:UsbUirt.GeneralSettings.UUIRTConfigBits.BlinkOnTransmit">
             <summary>
-            Pronto format
+            Indicator LED on USB-UIRT lights during IR transmission.
+            </summary>
+        </member>
+        <member name="F:UsbUirt.GeneralSettings.UUIRTConfigBits.GenerateLegacyCodesOnReceive">
+            <summary>
+            Generate 'legacy' UIRT-compatible codes on receive
+            </summary>
+        </member>
+        <member name="F:UsbUirt.GeneralSettings.UUIRTConfigBits.Reserved0">
+            <summary>
+            Reserved
+            </summary>
+        </member>
+        <member name="F:UsbUirt.GeneralSettings.UUIRTConfigBits.Reserved1">
+            <summary>
+            Reserved
             </summary>
         </member>
         <member name="T:UsbUirt.Enums.LearnCodeModifier">
@@ -473,58 +460,71 @@
             Firmware revision year
             </summary>
         </member>
-        <member name="M:UsbUirt.GeneralSettings.UUIRTGetUUIRTConfig(System.IntPtr,System.UInt32@)">
+        <member name="M:UsbUirt.Receiver.UUIRTSetReceiveCallback(System.IntPtr,UsbUirt.Receiver.ReceiveCallback,System.IntPtr)">
             <summary>
-            Retrieves the current feature configuration bits from the USB-UIRT's nonvolatile 
-            configuration memory. These various configuration bits control how the USB-UIRT 
-            behaves. Most are reserved for future implementation and should be read and 
-            written as Zero.
+            Registers a receive callback function which the driver will call when an IR code 
+            is received from the air.
+            
+            typedef void (WINAPI *PUUCALLBACKPROC) (char *IREventStr, void *userData);
+            When the USB-UIRT receives a code from the air, it will call the callback function
+            with a null-terminated, twelve-character (like IRMAN) ir code in IREventStr. 
             </summary>
+            <remarks>
+            The types of codes which are passed to IREventStr are not the same as the type
+            of codes passed back from a UUIRTLearnIR call (the codes from a UUIRTLearnIR 
+            are much larger and contain all the necessary data to reproduce a code, 
+            whereas the codes passed to IREventStr are simpler representations of IR codes 
+            only long enough to be unique).
+            </remarks>
             <param name="hDrvHandle">Handle to to USB-UIRT returned by UUIRTOpen</param>
-            <param name="uConfig">Integer representation of USB-UIRT configuration</param>
-            <returns>TRUE on success</returns>
-            <remarks> Using this API call is optional and is only needed to support 
-            changing USB-UIRT's private preferences</remarks>
-        </member>
-        <member name="M:UsbUirt.GeneralSettings.UUIRTSetUUIRTConfig(System.IntPtr,System.UInt32)">
-            <summary>
-            Configures the current feature configuration bits for the USB-UIRT's nonvolatile 
-            configuration memory. These various configuration bits control how the USB-UIRT 
-            behaves.
-            </summary>
-            <param name="hDrvHandle">Handle to to USB-UIRT returned by UUIRTOpen</param>
-            <param name="uConfig">Integer representation of USB-UIRT configuration</param>
+            <param name="receiveProc">the address of a 
+            PUUCALLBACKPROC function</param>
+            <param name="userData">a general-purpose 
+            32-bit value supplied by the caller to UUIRTSetReceiveCallback. This parameter 
+            is useful for carrying context information, etc. Will be passed to receiveProc.</param>
             <returns>TRUE on success</returns>
         </member>
-        <member name="T:UsbUirt.GeneralSettings.UUIRTConfigBits">
+        <member name="E:UsbUirt.Receiver.Received">
             <summary>
-            Flags used when getting or setting the USB-UIRT configuration
+            Raised when IR input is received.
+            </summary>
+            
+        </member>
+        <member name="T:UsbUirt.Receiver.ReceivedEventHandler">
+            <summary>
+            The delegate used for the Received event.
             </summary>
         </member>
-        <member name="F:UsbUirt.GeneralSettings.UUIRTConfigBits.BlinkOnReceive">
+        <member name="T:UsbUirt.Receiver.ReceiveCallback">
             <summary>
-            Indicator LED on USB-UIRT blinks when remote signals are received
+            Delegate used to receive callbacks when IR input is received
             </summary>
         </member>
-        <member name="F:UsbUirt.GeneralSettings.UUIRTConfigBits.BlinkOnTransmit">
+        <member name="T:UsbUirt.Enums.Emitter">
             <summary>
-            Indicator LED on USB-UIRT lights during IR transmission.
+            Choose which emitter to use to send the IR signal
             </summary>
         </member>
-        <member name="F:UsbUirt.GeneralSettings.UUIRTConfigBits.GenerateLegacyCodesOnReceive">
+        <member name="F:UsbUirt.Enums.Emitter.Internal">
             <summary>
-            Generate 'legacy' UIRT-compatible codes on receive
+            The internal IR blaster
             </summary>
         </member>
-        <member name="F:UsbUirt.GeneralSettings.UUIRTConfigBits.Reserved0">
+        <member name="F:UsbUirt.Enums.Emitter.External1">
             <summary>
-            Reserved
+            The external emitter on the 'Right' channel
             </summary>
+            <remarks>
+            The external connection is a normal headphone jack, that is where the Left/Right channel comes from
+            </remarks>
         </member>
-        <member name="F:UsbUirt.GeneralSettings.UUIRTConfigBits.Reserved1">
+        <member name="F:UsbUirt.Enums.Emitter.External2">
             <summary>
-            Reserved
+            The external emitter on the 'Left' channel
             </summary>
+            <remarks>
+            The external connection is a normal headphone jack, that is where the Left/Right channel comes from
+            </remarks>
         </member>
     </members>
 </doc>
